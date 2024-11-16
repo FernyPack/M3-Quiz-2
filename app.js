@@ -9,27 +9,45 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-let cubeMesh = new THREE.Mesh();
 let stars, starGeo;
 let particleTexture;
 
 lighting();
-cube();
+createText();  
 particles();
-setInterval(changeParticlesColor, 3000); // 3000ms = 3 seconds
+setInterval(changeParticlesColor, 3000); 
+
+
+function createText() {
+  
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  canvas.width = 256;
+  canvas.height = 128;
+
+  context.font = '48px Arial'; // Font size and type
+  context.fillStyle = 'white'; // Text color
+  context.fillText('Rico', 1, 35); // Draw the text at the specified position
+
+  const textTexture = new THREE.CanvasTexture(canvas);
+
+  const textMaterial = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true });
+  const textGeometry = new THREE.PlaneGeometry(10, 5);
+  const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+  textMesh.position.set(2.5, 0, -20); // Adjust the position as needed
+  scene.add(textMesh);
+}
 
 function changeParticlesColor() {
-  // Generate a random color
-  const randomColor = Math.random() * 0xffffff; // Random color
-
-  // Apply the new color to the particle material
+  const randomColor = Math.random() * 0xffffff;
   stars.material.color.setHex(randomColor);
 }
 
 function particles() {
   const points = [];
 
-  // Create 6000 particles in random positions
   for (let i = 0; i < 6000; i++) {
     let star = new THREE.Vector3(
       Math.random() * 600 - 300,
@@ -44,7 +62,7 @@ function particles() {
   particleTexture = new THREE.TextureLoader().load("assets/star.png");
 
   let starMaterial = new THREE.PointsMaterial({
-    color: 0xffb6c1, // light pink
+    color: 0xffb6c1, // Light pink
     size: 1.2,
     map: particleTexture,
     transparent: true,
@@ -61,9 +79,8 @@ function animateParticles() {
   const particleCount = positions.length / 3;
 
   for (let i = 0; i < particleCount; i++) {
-    positions[i * 3 + 1] -= 0.9; // Move particles down
+    positions[i * 3 + 1] -= 0.9;  // Move particles down
 
-    // Reset particles once they reach the bottom
     if (positions[i * 3 + 1] < -200) {
       positions[i * 3 + 1] = Math.random() * 300 + 100;
       positions[i * 3] = Math.random() * 600 - 300;
@@ -71,19 +88,7 @@ function animateParticles() {
     }
   }
 
-  starGeo.attributes.position.needsUpdate = true; 
-}
-
-function cube() {
-  const texture = new THREE.TextureLoader().load("assets/wooden.jpg");
-  const cubeMaterial = new THREE.MeshBasicMaterial({ map: texture });
-  const cubeGeometry = new THREE.BoxGeometry(10, 5, 5, 5);
-  cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-
-  cubeMesh.position.z = -5;
-  camera.position.z = 15;
-
-  scene.add(cubeMesh);
+  starGeo.attributes.position.needsUpdate = true;
 }
 
 function lighting() {
@@ -106,8 +111,6 @@ function animate() {
 
   animateParticles();
 
-  cubeMesh.rotation.x += 0.008;
-  cubeMesh.rotation.y += 0.008;
   renderer.render(scene, camera);
 }
 
