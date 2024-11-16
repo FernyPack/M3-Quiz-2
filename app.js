@@ -8,69 +8,83 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
 let cubeMesh = new THREE.Mesh();
 let stars, starGeo;
+let particleTexture;
 
 lighting();
-// cube();
+cube();
 particles();
+setInterval(changeParticlesColor, 3000); // 3000ms = 3 seconds
 
-function particles() {
-    const points = [];
-  
-    for (let i = 0; i < 6000; i++) {
-      let star = new THREE.Vector3(
-        Math.random() * 600 - 300,
-        Math.random() * 600 - 300,
-        Math.random() * 600 - 300
-      );
-      points.push(star);
-    }
-  
-    starGeo = new THREE.BufferGeometry().setFromPoints(points);
-  
-    let sprite = new THREE.TextureLoader().load("assets/star.png");
-    let starMaterial = new THREE.PointsMaterial({
-      color: 0xffb6c1,
-      size: 1.2,
-      map: sprite,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-  
-    stars = new THREE.Points(starGeo, starMaterial);
-    scene.add(stars);
-  }  
+function changeParticlesColor() {
+  // Generate a random color
+  const randomColor = Math.random() * 0xffffff; // Random color
 
-  function animateParticles() {
-    const positions = starGeo.attributes.position.array;
-    const particleCount = positions.length / 3; 
-  
-    for (let i = 0; i < particleCount; i++) {
-        positions[i * 3 + 1] -= 0.9; 
-
-        if (positions[i * 3 + 1] < -100) {
-            positions[i * 3 + 1] = Math.random() * 300 + 100;  
-            positions[i * 3] = Math.random() * 600 - 300;      
-            positions[i * 3 + 2] = Math.random() * 600 - 300;  
-        }
-    }
-  
-    starGeo.attributes.position.needsUpdate = true; 
+  // Apply the new color to the particle material
+  stars.material.color.setHex(randomColor);
 }
 
-// function cube() {
-//   const texture = new THREE.TextureLoader().load("assets/wooden.jpg");
-//   const cubeMaterial = new THREE.MeshBasicMaterial({ map: texture });
-//   const cubeGeometry = new THREE.BoxGeometry(10, 5, 5, 5);
-//   cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+function particles() {
+  const points = [];
 
-//   cubeMesh.position.z = -5;
-//   camera.position.z = 15;
+  // Create 6000 particles in random positions
+  for (let i = 0; i < 6000; i++) {
+    let star = new THREE.Vector3(
+      Math.random() * 600 - 300,
+      Math.random() * 600 - 300,
+      Math.random() * 600 - 300
+    );
+    points.push(star);
+  }
 
-//   scene.add(cubeMesh);
-// }
+  starGeo = new THREE.BufferGeometry().setFromPoints(points);
+
+  particleTexture = new THREE.TextureLoader().load("assets/star.png");
+
+  let starMaterial = new THREE.PointsMaterial({
+    color: 0xffb6c1, // light pink
+    size: 1.2,
+    map: particleTexture,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  stars = new THREE.Points(starGeo, starMaterial);
+  scene.add(stars);
+}
+
+function animateParticles() {
+  const positions = starGeo.attributes.position.array;
+  const particleCount = positions.length / 3;
+
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3 + 1] -= 0.9; // Move particles down
+
+    // Reset particles once they reach the bottom
+    if (positions[i * 3 + 1] < -200) {
+      positions[i * 3 + 1] = Math.random() * 300 + 100;
+      positions[i * 3] = Math.random() * 600 - 300;
+      positions[i * 3 + 2] = Math.random() * 600 - 300;
+    }
+  }
+
+  starGeo.attributes.position.needsUpdate = true; 
+}
+
+function cube() {
+  const texture = new THREE.TextureLoader().load("assets/wooden.jpg");
+  const cubeMaterial = new THREE.MeshBasicMaterial({ map: texture });
+  const cubeGeometry = new THREE.BoxGeometry(10, 5, 5, 5);
+  cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+  cubeMesh.position.z = -5;
+  camera.position.z = 15;
+
+  scene.add(cubeMesh);
+}
 
 function lighting() {
   const light = new THREE.HemisphereLight(0x780a44, 0x1c3020, 1);
